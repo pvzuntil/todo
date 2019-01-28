@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>TODO LIST SEDERHANA</title>
+
+  <link rel="stylesheet" href="sem/sem.min.css">
+  
+  <script src="jquery/jquery.min.js"></script>
+  <script src="v.js"></script>
+  <script src="sem/sem.min.js"></script>
+
+</head>
+<body>
+  <div id="appVue">
+    <div class="ui blue menu inverted huge">
+      <div class="item" style="font-weight:bold">
+        <i class="list icon"></i> {{namaAplikasi}}
+      </div>
+      <div class="menu right">
+        <div class="item">
+          <div class="ui dropdown">
+            <i class="bars icon"></i>
+            <div class="menu">
+              <div class="item" @click="reset">
+                Reset Ulang
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- END HEADER -->
+    <!-- CONTAINER -->
+    <div class="ui container">
+      <div class="ui grid column row stackable">
+        <div class="column">
+          <!-- HEADER -->
+            <h2 class="ui header centered">DAFTAR PEKERJAAN YANG HARUS DIKERJAKAN</h2>
+          <!-- END HEADER -->
+            <!-- IF PEKERJAAN == 0 -->
+            <div class="ui segments">
+              <div class="ui blue center aligned segment" v-if="daftarTodo == ''">Tidak ada data pekerjaan</div>
+            <!-- END IF PEKERJAAN -->
+              <div class="ui blue segment" v-else>
+                <!-- FOREACH LIST PEKERJAAN DISIINI -->
+                <div class="ui teal segment" v-for="todo, i in daftarTodo" :key="i">
+                  <div class="ui grid stackable">
+                    <div class="fourteen wide computer column middle aligned">
+                      <p>{{todo.nama}}</p>
+                    </div>
+                    <div class="two wide computer column right aligned">
+                      <button class="ui icon green button"><i class="check icon"></i></button>
+                      <button class="ui icon red button" :key="i" @click="prepareDelete(i)"><i class="trash icon"></i></button>
+                    </div>
+                  </div>
+                </div>
+                <!-- END FOREACH LIST PEKETJAAN -->
+              </div>
+              <!-- INPUT PEKERJAAN -->
+              <div class="ui secondary segment">
+                <div class="ui action input fluid">
+                  <input type="text" name="" id="" placeholder="Tambah pekerjaan baru ..." v-model="inputTodoBaru" @keyup.enter="addTodo">
+                  <button class="ui icon blue button" @click="addTodo"><i class="add icon"></i></button>
+                </div>
+              </div>
+              <!-- END INPUT PEKERJAAN -->
+            </div>
+        </div>
+      </div>
+    </div>
+    <!-- END CONTAINER -->
+  
+    <!-- MMODAL -->
+    <div class="ui small modal" id="modalA">
+      <div class="header">Peringatan</div>
+      <div class="content">
+        Apakah anda yakin ingin menghapus pekerjaan .?
+      </div>
+      <div class="actions">
+        <button class="ui red cancel button">Tidak</button>
+        <button class="ui green button" @click="deleteTodo(indexTodo)">Ya</button>
+      </div>
+    </div>
+
+    <div class="ui small modal" id="modalB">
+      <div class="header">Peringatan</div>
+      <div class="content">
+        Apakah anda yakin ingin mengembalikan ulang dan menghapus semuanya .?
+      </div>
+      <div class="actions">
+        <button class="ui red cancel button">Tidak</button>
+        <button class="ui green button" @click="resetAll">Ya</button>
+      </div>
+    </div>
+    <!-- END MMODAL -->
+  </div>
+
+  <script>
+    var appVue = new Vue({
+      el:'#appVue',
+      data:{
+        namaAplikasi:'  T O D O L I S T',
+        inputTodoBaru:'',
+        daftarTodo:[],
+        indexTodo:''
+      },
+      methods:{
+        addTodo(){
+          this.daftarTodo.push({nama:this.inputTodoBaru, status:false});
+          localStorage.setItem('daftarTodo', JSON.stringify(this.daftarTodo));
+          this.inputTodoBaru = '';
+        },
+        prepareDelete(i){
+          this.indexTodo = i;
+          $('#modalA').modal('show');
+        },
+        deleteTodo(indexTodo){
+          this.daftarTodo.splice(indexTodo, 1);
+          localStorage.setItem('daftarTodo', JSON.stringify(this.daftarTodo));
+          $('#modalA').modal('hide');
+        },
+        reset(){
+          $('#modalB').modal('show');
+        },
+        resetAll() {
+          this.daftarTodo = []
+          $('#modalB').modal('hide');
+          localStorage.setItem('daftarTodo', JSON.stringify(this.daftarTodo));
+        }
+      },
+      created(){
+        this.daftarTodo = JSON.parse(localStorage.getItem('daftarTodo')) || [];
+      }
+    });
+
+    $(()=>{
+      $('.ui.dropdown').dropdown();
+      $('.ui.small.modal').modal();
+    });
+  </script>
+</body>
+</html>
