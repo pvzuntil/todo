@@ -7,10 +7,12 @@
   <title>TODO LIST SEDERHANA</title>
 
   <link rel="stylesheet" href="sem/sem.min.css">
+  <link rel="stylesheet" href="sw/sw.css">
   
   <script src="jquery/jquery.min.js"></script>
   <script src="v.js"></script>
   <script src="sem/sem.min.js"></script>
+  <script src="sw/sw.js"></script>
 
 </head>
 <body>
@@ -26,6 +28,12 @@
             <div class="menu">
               <div class="item" @click="reset">
                 Reset Ulang
+              </div>
+              <div class="item" @click="tampil">
+                <div :class="dataTampil ? 'ui checked checkbox' : 'ui checkbox'">
+                  <input type="checkbox" :checked="dataTampil" tabindex="0" class="hidden">
+                  <label>Tampilkan pekerjaan yang sudah selesai</label>
+                </div>
               </div>
             </div>
           </div>
@@ -46,13 +54,14 @@
             <!-- END IF PEKERJAAN -->
               <div class="ui blue segment" v-else>
                 <!-- FOREACH LIST PEKERJAAN DISIINI -->
-                <div class="ui teal segment" v-for="todo, i in daftarTodo" :key="i">
+                <div v-for="todo, i in daftarTodo" :key="i" :class="todo.status ? classSegmentTrue : classSegmentFalse" v-if="dataTampil && todo.status || !todo.status">
                   <div class="ui grid stackable">
                     <div class="fourteen wide computer column middle aligned">
                       <p>{{todo.nama}}</p>
                     </div>
                     <div class="two wide computer column right aligned">
-                      <button class="ui icon green button"><i class="check icon"></i></button>
+                      <button class="ui icon green button" @click="selesai(i)" v-if="!todo.status"><i class="check icon"></i></button>
+                      <button class="ui icon red button" @click="belum(i)" v-else><i class="close icon"></i></button>
                       <button class="ui icon red button" :key="i" @click="prepareDelete(i)"><i class="trash icon"></i></button>
                     </div>
                   </div>
@@ -105,13 +114,29 @@
         namaAplikasi:'  T O D O L I S T',
         inputTodoBaru:'',
         daftarTodo:[],
-        indexTodo:''
+        indexTodo:'',
+        classSegmentFalse:'ui teal segment',
+        classSegmentTrue:'ui secondary inverted green segment',
+        dataTampil:''
       },
       methods:{
         addTodo(){
-          this.daftarTodo.push({nama:this.inputTodoBaru, status:false});
-          localStorage.setItem('daftarTodo', JSON.stringify(this.daftarTodo));
-          this.inputTodoBaru = '';
+          if(this.inputTodoBaru == ''){
+            swal({
+              toast:true,
+              position:'top',
+              showConfirmButton:false,
+              timer: 2000,
+              type:'error',
+              title:'Wajib diisi mas !',
+              backdrop:false
+            });
+            return false;
+          }else{
+            this.daftarTodo.push({nama:this.inputTodoBaru, status:false});
+            localStorage.setItem('daftarTodo', JSON.stringify(this.daftarTodo));
+            this.inputTodoBaru = '';
+          }
         },
         prepareDelete(i){
           this.indexTodo = i;
@@ -129,16 +154,35 @@
           this.daftarTodo = []
           $('#modalB').modal('hide');
           localStorage.setItem('daftarTodo', JSON.stringify(this.daftarTodo));
+        },
+        selesai(i){
+          this.daftarTodo[i].status = true;
+          localStorage.setItem('daftarTodo', JSON.stringify(this.daftarTodo));
+        },
+        belum(i) {
+          this.daftarTodo[i].status = false;
+          localStorage.setItem('daftarTodo', JSON.stringify(this.daftarTodo));
+        },
+        tampil(){
+          if(this.dataTampil){
+            this.dataTampil = false
+          }else{
+            this.dataTampil = true
+          }
+          localStorage.setItem('dataTampil', this.dataTampil);
         }
       },
       created(){
         this.daftarTodo = JSON.parse(localStorage.getItem('daftarTodo')) || [];
+        this.dataTampil = JSON.parse(localStorage.getItem('dataTampil'));
+
       }
     });
 
     $(()=>{
       $('.ui.dropdown').dropdown();
       $('.ui.small.modal').modal();
+      $('.ui.checkbox').checkbox();
     });
   </script>
 </body>
